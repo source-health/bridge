@@ -1,0 +1,17 @@
+{
+  "exclude": ["node_modules"],
+  "include": ["./src/**/*.ts", "./generator/**/*.ts"],
+  "compilerOptions": {
+    "outDir": "dist",
+    "strict": true,
+    "moduleResolution": "node",
+    "sourceMap": false,
+    "declaration": true,
+    "skipDefaultLibCheck": true,
+    "skipLibCheck": true,
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "module": "CommonJS",
+    "target": "ES6"
+  }
+}
