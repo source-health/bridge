@@ -1,13 +1,12 @@
 # SourceBridge Library
 
-:bangbang: | This SDK is still in beta, and may change significantly before its public release.
-:---: | :---
+| :bangbang: | This SDK is still in beta, and may change significantly before its public release. |
+| :--------: | :--------------------------------------------------------------------------------- |
 
 The SourceBridge library is a required dependency for customer-built 'frame' plugins that run within the main
 Source Health web UI.
 
 This SDK is written in TypeScript and compiled to ES6.
-
 
 ## Getting Started
 
@@ -28,10 +27,9 @@ Note: after rendering for the first time, your application must call `SourceBrid
 in order to clear the loading state and display the plugin.
 
 ```typescript
- await SourceBridge.onContextUpdate(async (context) => {
+await SourceBridge.onContextUpdate(async (context) => {
   // Handle the context, set and render your application
   await doSomeStuff(context.member)
-
 
   // Call ready() to clear the loading state for the plugin
   SourceBridge.ready()
@@ -44,7 +42,21 @@ And, finally, kick off the handshake with the parent window (which will lead to 
 await SourceBridge.init()
 ```
 
+The SourceBridge client will keep a refreshed application token available. At
+any point after the initial context update is received (including inside the
+`onContextUpdate` callback), you can obtain a valid token by calling:
+
+```typescript
+const { token, expiresAt } = await SourceBridge.currentToken()
+```
+
+These tokens expire within a few minutes. When you need a token (e.g. to inject
+an Authorization header into a request you are making to your backend), you
+should call `currentToken()`.
+
 ## Plugin Developer Documentation
 
-Developer documentation for plugin development will be published shortly. In the meantime, an example plugin is
-available at [source-health/source-demo-frame-plugin](https://github.com/source-health/source-demo-frame-plugin).
+Early access developer documentation for plugin development is available for
+invited developers and will be be published publicly when the feature is
+generally available. In the meantime, an example plugin is available at
+[source-health/source-demo-frame-plugin](https://github.com/source-health/source-demo-frame-plugin).
