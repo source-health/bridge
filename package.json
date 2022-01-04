@@ -1,5 +1,5 @@
 {
-  "name": "@source-health/sourcebridge",
+  "name": "@source-health/bridge",
   "version": "0.0.1",
   "license": "MIT",
   "description": "Official SDK for Source Health iframe plugins.",
@@ -12,9 +12,9 @@
     "dist",
     "src"
   ],
-  "main": "dist/sourcebridge.node.js",
+  "main": "dist/bridge.node.js",
   "typings": "dist/index.d.ts",
-  "browser": "dist/sourcebridge.js",
+  "browser": "dist/bridge.js",
   "sideEffects": false,
   "devDependencies": {
     "@types/jest": "^27.4.0",
@@ -39,14 +39,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/source-health/sourcebridge.git"
+    "url": "git+https://github.com/source-health/bridge.git"
   },
   "keywords": [
     "Source"
   ],
   "author": "Source Health, Inc",
   "bugs": {
-    "url": "https://github.com/source-health/sourcebridge/issues"
+    "url": "https://github.com/source-health/bridge/issues"
   },
-  "homepage": "https://github.com/source-health/sourcebridge#readme"
+  "homepage": "https://github.com/source-health/bridge#readme"
 }
