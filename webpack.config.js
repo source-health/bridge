@@ -12,7 +12,7 @@ function generateConfig(name) {
       path: join(__dirname, 'dist'),
       filename: name + '.js',
       sourceMapFilename: name + '.map',
-      library: 'source-client',
+      library: 'bridge',
       libraryTarget: 'umd',
       globalObject: 'this',
     },
@@ -41,6 +41,4 @@ function generateConfig(name) {
   }
 }
 
-module.exports = ['sourcebridge', 'sourcebridge.min', 'sourcebridge.node'].map((key) =>
-  generateConfig(key),
-)
+module.exports = ['bridge', 'bridge.min', 'bridge.node'].map((key) => generateConfig(key))

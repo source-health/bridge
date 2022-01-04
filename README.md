@@ -1,25 +1,25 @@
-# SourceBridge Library
+# Source Bridge SDK
 
 | :bangbang: | This SDK is still in beta, and may change significantly before its public release. |
 | :--------: | :--------------------------------------------------------------------------------- |
 
-The SourceBridge library is a required dependency for customer-built 'frame' plugins that run within the main
+The Source Bridge library is a required dependency for customer-built 'frame' plugins that run within the main
 Source Health web UI.
 
 This SDK is written in TypeScript and compiled to ES6.
 
 ## Getting Started
 
-Getting started with the Source Health client is easy. First, install the package via NPM:
+Getting started with Source Bridge is easy. First, install the package via NPM:
 
 ```bash
-yarn add @source-health/sourcebridge # or npm install @source-health/sourcebridge
+yarn add @source-health/bridge # or npm install @source-health/bridge
 ```
 
 Then, import the SourceBridge API:
 
 ```typescript
-import { SourceBridge } from '@source-health/sourcebridge'
+import { SourceBridge } from '@source-health/bridge'
 ```
 
 Subscribe to context updates from the parent window.
