@@ -6,7 +6,7 @@
   "scripts": {
     "build": "webpack",
     "lint": "eslint src",
-    "test": "jest"
+    "test": "jest '.*.spec.ts'"
   },
   "files": [
     "dist",
