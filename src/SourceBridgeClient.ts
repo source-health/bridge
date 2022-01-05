@@ -20,7 +20,7 @@ export class SourceBridgeClient {
   }
 
   public sendEvent(message: EventEnvelope): void {
-    console.log('[SourceBridge] sending message to parent:', message)
+    console.log('[SourceBridge] sending message to parent', message)
     parent.postMessage(JSON.stringify(message), '*')
   }
 
@@ -28,7 +28,7 @@ export class SourceBridgeClient {
     const promise = new Promise<TResponse>((resolve, _reject) => {
       this.openRequests.set(message.id, resolve as ResolveFn<unknown>)
     })
-    console.log('[SourceBridge] sending request to parent:', message)
+    console.log('[SourceBridge] sending request to parent ', message)
     parent.postMessage(JSON.stringify(message), '*')
     return promise
   }
@@ -47,7 +47,10 @@ export class SourceBridgeClient {
       console.log('[SourceBridge] Ignoring message event from non-parent')
       return
     }
-    const envelope = JSON.parse(event.data as string) as Partial<ResponseEnvelope>
+    const envelope = this.parseJson(event.data)
+    if (!envelope) {
+      return
+    }
     // If we have in_reply_to set then this is a response
     if (envelope.in_reply_to) {
       this.handleResponse(envelope as ResponseEnvelope)
@@ -79,5 +82,19 @@ export class SourceBridgeClient {
     }
     this.openRequests.delete(requestId)
     resolve(message)
+  }
+
+  private parseJson(data: unknown): Partial<ResponseEnvelope> | null {
+    try {
+      const envelope = JSON.parse(data as string) as Partial<EventEnvelope>
+      if (envelope.id && envelope.type) {
+        return envelope
+      }
+      console.error('[SourceBridge] received non-Source-envelope message', envelope)
+      return null
+    } catch (err) {
+      console.error('[SourceBridge] received non-JSON message', data, err)
+      return null
+    }
   }
 }
