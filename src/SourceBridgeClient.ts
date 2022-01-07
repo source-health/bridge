@@ -20,7 +20,7 @@ export class SourceBridgeClient {
   }
 
   public sendEvent(message: EventEnvelope): void {
-    console.log('[SourceBridge] sending message to parent', message)
+    console.log('[SourceBridge] sending message to parent: ', message)
     parent.postMessage(JSON.stringify(message), '*')
   }
 
@@ -28,7 +28,7 @@ export class SourceBridgeClient {
     const promise = new Promise<TResponse>((resolve, _reject) => {
       this.openRequests.set(message.id, resolve as ResolveFn<unknown>)
     })
-    console.log('[SourceBridge] sending request to parent ', message)
+    console.log('[SourceBridge] sending request to parent: ', message)
     parent.postMessage(JSON.stringify(message), '*')
     return promise
   }
@@ -44,10 +44,10 @@ export class SourceBridgeClient {
 
   private async handleEnvelope(event: MessageEvent<unknown>): Promise<void> {
     if (event.source !== parent) {
-      console.log('[SourceBridge] Ignoring message event from non-parent')
+      console.log('[SourceBridge] Ignoring message event from non-parent.')
       return
     }
-    const envelope = this.parseJson(event.data)
+    const envelope = this.parseEnvelope(event.data)
     if (!envelope) {
       return
     }
@@ -66,7 +66,7 @@ export class SourceBridgeClient {
         try {
           await callback(message)
         } catch (error) {
-          console.error('[SourceBridge] error thrown in event callback:', error)
+          console.error('[SourceBridge] error thrown in event callback: ', error)
         }
       }
     }
@@ -77,23 +77,23 @@ export class SourceBridgeClient {
     console.log(`[SourceBridge] handling response to ${requestId}`, message)
     const resolve = this.openRequests.get(requestId)
     if (!resolve) {
-      console.error(`[SourceBridge] Did not find resolve for request ${requestId}`)
+      console.error(`[SourceBridge] Did not find resolve for request ${requestId}.`)
       return
     }
     this.openRequests.delete(requestId)
     resolve(message)
   }
 
-  private parseJson(data: unknown): Partial<ResponseEnvelope> | null {
+  private parseEnvelope(data: unknown): Partial<ResponseEnvelope> | null {
     try {
       const envelope = JSON.parse(data as string) as Partial<EventEnvelope>
       if (envelope.id && envelope.type) {
         return envelope
       }
-      console.error('[SourceBridge] received non-Source-envelope message', envelope)
+      console.error('[SourceBridge] received non-Source-envelope message: ', envelope)
       return null
     } catch (err) {
-      console.error('[SourceBridge] received non-JSON message', data, err)
+      console.error('[SourceBridge] received non-JSON message: ', data, err)
       return null
     }
   }

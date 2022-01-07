@@ -89,7 +89,7 @@ async function init() {
           context: SourceBridge.currentContext(),
           token: await SourceBridge.currentToken(),
         })
-      }, 1000)
+      }, 1_000)
     }
   })
 

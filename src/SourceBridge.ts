@@ -75,7 +75,7 @@ class SourceBridgeAPI {
   // eslint-disable-next-line @typescript-eslint/require-await
   public async currentToken(): Promise<Auth> {
     if (!this.auth) {
-      console.error('[SourceBridge] called currentToken() before init()')
+      console.error('[SourceBridge] called currentToken() before init().')
       throw new Error(
         'SourceBridge is not yet initialized. Please call `init()` before currentToken()',
       )
@@ -85,7 +85,7 @@ class SourceBridgeAPI {
 
   public currentContext(): Context {
     if (!this.context) {
-      console.error('[SourceBridge] called currentContext() before init()')
+      console.error('[SourceBridge] called currentContext() before init().')
       throw new Error(
         'SourceBridge is not yet initialized. Please call `init()` before currentContext()',
       )
@@ -95,7 +95,7 @@ class SourceBridgeAPI {
 
   public info(): PluginInfo {
     if (!this.pluginInfo) {
-      console.error('[SourceBridge] called info() before init()')
+      console.error('[SourceBridge] called info() before init().')
       throw new Error('SourceBridge is not yet initialized. Please call `init()` before info()')
     }
     return this.pluginInfo
@@ -111,13 +111,13 @@ class SourceBridgeAPI {
   }
 
   private async handleNewContext(context: ContextPayload): Promise<void> {
-    console.log('[SourceBridge] handling new context', context)
+    console.log('[SourceBridge] handling new context: ', context)
     this.context = context
     await Promise.allSettled(this.onContextCallbacks.map((callback) => callback(context)))
   }
 
   private handleNewAuth(auth: AuthPayload): void {
-    console.log('[SourceBridge] handling new application token')
+    console.log('[SourceBridge] handling new application token.')
     this.auth = {
       token: auth.token,
       expiresAt: new Date(auth.expires_at),
