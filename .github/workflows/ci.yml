@@ -1,0 +1,36 @@
+on: push
+
+jobs:
+  e2e-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-build-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Install NPM dependencies
+        run: yarn install
+
+      - name: Lint
+        run: yarn lint
+
+      # Browsers are not worth caching because the `install-deps` step takes ~50s anyway, and restoring the cache takes
+      # almost all of the rest of the time savings.
+      - name: Install browser engines
+        run: |
+          sudo npx playwright install-deps
+          npx playwright install
+
+      - name: Run jest tests
+        run: yarn test
+
+      - name: Run Playwright E2E tests
+        run: yarn e2e

@@ -18,17 +18,11 @@ function generateConfig(name) {
     },
     devtool: 'source-map',
     resolve: {
-      extensions: ['.js', '.jsx', '.ts', '.tsx'],
+      extensions: ['.js', '.ts'],
       fallback: {
         http: false,
         https: false,
       },
-      alias:
-        target === 'node'
-          ? {}
-          : {
-              'jose/jwt/sign': false,
-            },
     },
     module: {
       rules: [

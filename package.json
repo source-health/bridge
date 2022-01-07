@@ -6,7 +6,9 @@
   "scripts": {
     "build": "webpack",
     "lint": "eslint src",
-    "test": "jest"
+    "test": "jest '.*.spec.ts'",
+    "test-server": "cd e2e && webpack serve",
+    "e2e": "playwright test --config e2e"
   },
   "files": [
     "dist",
@@ -17,6 +19,7 @@
   "browser": "dist/bridge.js",
   "sideEffects": false,
   "devDependencies": {
+    "@playwright/test": "^1.17.1",
     "@types/jest": "^27.4.0",
     "@types/node": "^17.0.5",
     "@typescript-eslint/eslint-plugin": "^5.8.1",
@@ -32,7 +35,8 @@
     "tslib": "^2.3.1",
     "typescript": "^4.4.2",
     "webpack": "^5.56.0",
-    "webpack-cli": "^4.8.0"
+    "webpack-cli": "^4.8.0",
+    "webpack-dev-server": "^4.7.2"
   },
   "jest": {
     "preset": "ts-jest"

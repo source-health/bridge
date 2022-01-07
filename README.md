@@ -60,3 +60,23 @@ Early access developer documentation for plugin development is available for
 invited developers and will be be published publicly when the feature is
 generally available. In the meantime, an example plugin is available at
 [source-health/source-demo-frame-plugin](https://github.com/source-health/source-demo-frame-plugin).
+
+# Testing
+
+We have some minimal jest unit tests, these can be run with:
+
+```
+yarn test
+```
+
+Because this library is fundamentally about communicating between a parent
+window and a child window, we also have a browser-based (Playwright) end-to-end
+test capability using some static html and scripts adapted from the demo plugin.
+The tests and config for this are under ./e2e, including a separate webpack
+build with webpack-dev-server for bundling the test code and serving the html.
+
+To run the E2E tests:
+
+```
+yarn e2e
+```
