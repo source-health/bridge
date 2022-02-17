@@ -118,6 +118,10 @@ class SourceBridgeAPI {
 
   private handleNewAuth(auth: AuthPayload): void {
     console.log('[SourceBridge] handling new application token.')
+    if (!auth.token || !auth.expires_at) {
+      console.error('[SourceBridge] could not parse new application token')
+      return
+    }
     this.auth = {
       token: auth.token,
       expiresAt: new Date(auth.expires_at),
