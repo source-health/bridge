@@ -19,7 +19,7 @@
   "browser": "dist/bridge.js",
   "sideEffects": false,
   "devDependencies": {
-    "@playwright/test": "^1.17.1",
+    "@playwright/test": "^1.23.1",
     "@types/jest": "^28.1.4",
     "@types/node": "^17.0.5",
     "@typescript-eslint/eslint-plugin": "^5.8.1",
