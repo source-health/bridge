@@ -8,7 +8,8 @@
     "lint": "eslint src",
     "test": "jest '.*.spec.ts'",
     "test-server": "cd e2e && webpack serve",
-    "e2e": "playwright test --config e2e"
+    "e2e": "playwright test --config e2e",
+    "format": "prettier --write 'src/**/*.ts'"
   },
   "files": [
     "dist",
