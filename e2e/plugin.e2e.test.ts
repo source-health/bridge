@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test'
 
 /**
- * Testing this kind of bidirectional iframe communication presents a challenge. We have created parent.html /
- * parent.ts and plugin.html / plugin.ts, and then for each given test scenario we set a 'scenario' query param
+ * Testing this kind of bidirectional iframe communication presents a challenge. We have created plugin_parent.html /
+ * plugin_parent.ts and plugin.html / plugin.ts, and then for each given test scenario we set a 'scenario' query param
  * that triggers certain behavior. The comments on the tests explain the behavior of the scenarios because the
  * code in parent.ts and plugin.ts is pretty hard to follow.
  */
@@ -22,7 +22,7 @@ import { test, expect } from '@playwright/test'
  *  - currentToken(), currentContext() and info() all work after the callback
  */
 test('parent loads plugin and completes handshake', async ({ page, baseURL }) => {
-  await page.goto(`${baseURL}/parent.html`)
+  await page.goto(`${baseURL}/plugin_parent.html`)
   const title = page.locator('h1')
   await expect(title).toHaveText('Source Simple Plugin Demo')
 
@@ -65,7 +65,7 @@ test('parent loads plugin and completes handshake', async ({ page, baseURL }) =>
  * The plugin will update the content displayed to reflect that.
  */
 test('when parent sends updated auth the client has it available', async ({ page, baseURL }) => {
-  await page.goto(`${baseURL}/parent.html?scenario=send_auth`)
+  await page.goto(`${baseURL}/plugin_parent.html?scenario=send_auth`)
 
   const iframeHandle = await page.$('iframe')
   const frame = await iframeHandle.contentFrame()
@@ -100,7 +100,7 @@ test('when parent sends updated context the client calls the callback', async ({
   page,
   baseURL,
 }) => {
-  await page.goto(`${baseURL}/parent.html?scenario=send_new_context`)
+  await page.goto(`${baseURL}/plugin_parent.html?scenario=send_new_context`)
 
   const iframeHandle = await page.$('iframe')
   const frame = await iframeHandle.contentFrame()
@@ -132,7 +132,7 @@ test('when parent sends updated context the client calls the callback', async ({
  * The client should just ignore that message and correctly handle other valid messages
  */
 test('when parent sends non-JSON the client ignores it', async ({ page, baseURL }) => {
-  await page.goto(`${baseURL}/parent.html?scenario=send_non_json`)
+  await page.goto(`${baseURL}/plugin_parent.html?scenario=send_non_json`)
 
   const iframeHandle = await page.$('iframe')
   const frame = await iframeHandle.contentFrame()
@@ -164,7 +164,7 @@ test('when parent sends non-JSON the client ignores it', async ({ page, baseURL 
  * The client should just ignore that message and correctly handle other valid messages
  */
 test('when parent sends non-envelope the client ignores it', async ({ page, baseURL }) => {
-  await page.goto(`${baseURL}/parent.html?scenario=send_non_envelope`)
+  await page.goto(`${baseURL}/plugin_parent.html?scenario=send_non_envelope`)
 
   const iframeHandle = await page.$('iframe')
   const frame = await iframeHandle.contentFrame()
@@ -200,7 +200,7 @@ test('when init has not completed client gets exceptions for accessing current c
   page,
   baseURL,
 }) => {
-  await page.goto(`${baseURL}/parent.html?scenario=access_before_init&initDelay=10000`)
+  await page.goto(`${baseURL}/plugin_parent.html?scenario=access_before_init&initDelay=10000`)
 
   const iframeHandle = await page.$('iframe')
   const frame = await iframeHandle.contentFrame()

@@ -11,7 +11,7 @@ module.exports = {
   target: 'web',
   entry: {
     plugin: './src/plugin.ts',
-    parent: './src/parent.ts',
+    plugin_parent: './src/plugin_parent.ts',
   },
   output: {
     filename: '[name].bundle.js',
