@@ -1,21 +1,9 @@
-import {
-  AuthPayload,
-  AuthenticationEvent,
-  ContextEvent,
-  ContextPayload,
-  HelloResponse,
-  PluginInfoPayload,
-} from './Messages'
-import { SourceBridgeClient } from './SourceBridgeClient'
-import { generateRequestId } from './generateRequestId'
+import { Auth, SourceEmbedded } from '../SourceEmbedded'
+
+import { ContextPayload, HelloPayload, PluginInfoPayload } from './Messages'
 
 export interface Context {
   member?: string
-}
-
-export interface Auth {
-  token: string
-  expiresAt: Date
 }
 
 export interface PluginInfo {
@@ -26,47 +14,31 @@ export interface PluginInfo {
 
 type OnContextFn = (context: Context) => Promise<void>
 
-class SourceBridgeAPI {
-  private client: SourceBridgeClient
+class PluginBridgeAPI {
   private onContextCallbacks: OnContextFn[] = []
-  private auth?: Auth
   private context?: Context
   private pluginInfo?: PluginInfo
 
-  constructor() {
-    this.client = new SourceBridgeClient()
-  }
-
-  public async init(): Promise<PluginInfo> {
-    const response = await this.client.sendRequest<HelloResponse>({
-      type: 'hello',
-      id: generateRequestId(),
+  public async init(onContextUpdate?: OnContextFn): Promise<PluginInfo> {
+    if (onContextUpdate) {
+      this.onContextCallbacks.push(onContextUpdate)
+    }
+    const helloPayload = await SourceEmbedded.init<HelloPayload>({
+      eventHandlers: {
+        context: async (payload) => this.handleNewContext(payload as ContextPayload),
+      },
+      autoReady: false,
     })
-    this.handleNewAuth(response.payload.auth)
-    const info = this.handlePluginInfo(response.payload.plugin_info)
+    const info = this.handlePluginInfo(helloPayload.plugin_info)
+
     // Call the context callback with the initial context
-    await this.handleNewContext(response.payload.context)
-
-    // Subscribe to any further context events
-    this.client.onEvent('context', async (envelope) => {
-      const context = (envelope as ContextEvent).payload
-      await this.handleNewContext(context)
-    })
-
-    // Subscribe to any auth events
-    // eslint-disable-next-line @typescript-eslint/require-await
-    this.client.onEvent('authentication', async (envelope) => {
-      this.handleNewAuth((envelope as AuthenticationEvent).payload)
-    })
+    await this.handleNewContext(helloPayload.context)
 
     return info
   }
 
   public ready(): void {
-    this.client.sendEvent({
-      type: 'ready',
-      id: generateRequestId(),
-    })
+    SourceEmbedded.ready()
   }
 
   // This is async because we intend to add 'fetch on demand' when the current token is
@@ -74,13 +46,7 @@ class SourceBridgeAPI {
   // suspended.)
   // eslint-disable-next-line @typescript-eslint/require-await
   public async currentToken(): Promise<Auth> {
-    if (!this.auth) {
-      console.error('[SourceBridge] called currentToken() before init().')
-      throw new Error(
-        'SourceBridge is not yet initialized. Please call `init()` before currentToken()',
-      )
-    }
-    return this.auth
+    return await SourceEmbedded.currentToken()
   }
 
   public currentContext(): Context {
@@ -116,18 +82,6 @@ class SourceBridgeAPI {
     await Promise.allSettled(this.onContextCallbacks.map((callback) => callback(context)))
   }
 
-  private handleNewAuth(auth: AuthPayload): void {
-    console.log('[SourceBridge] handling new application token.')
-    if (!auth.token || !auth.expires_at) {
-      console.error('[SourceBridge] could not parse new application token')
-      return
-    }
-    this.auth = {
-      token: auth.token,
-      expiresAt: new Date(auth.expires_at),
-    }
-  }
-
   private handlePluginInfo(info: PluginInfoPayload): PluginInfo {
     const mapped = {
       application: info.application,
@@ -139,4 +93,4 @@ class SourceBridgeAPI {
   }
 }
 
-export const SourceBridge = new SourceBridgeAPI()
+export const PluginBridge = new PluginBridgeAPI()

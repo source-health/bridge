@@ -1,8 +1,7 @@
-import { MessageType } from './MessageType'
-
 export interface EventEnvelope {
   id: string
-  type: MessageType
+  type: string
+  payload?: unknown
 }
 
 export interface ResponseEnvelope extends EventEnvelope {

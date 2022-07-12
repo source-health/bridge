@@ -1,1 +1,1 @@
-export * from './SourceBridge'
+export * from './SourceEmbedded'

@@ -11,6 +11,7 @@ module.exports = {
   target: 'web',
   entry: {
     plugin: './src/plugin.ts',
+    legacy_plugin: './src/legacy_plugin.ts',
     plugin_parent: './src/plugin_parent.ts',
   },
   output: {

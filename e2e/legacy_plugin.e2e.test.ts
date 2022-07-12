@@ -22,7 +22,7 @@ import { test, expect } from '@playwright/test'
  *  - currentToken(), currentContext() and info() all work after the callback
  */
 test('parent loads plugin and completes handshake', async ({ page, baseURL }) => {
-  await page.goto(`${baseURL}/plugin_parent.html?plugin=plugin.html`)
+  await page.goto(`${baseURL}/plugin_parent.html?plugin=legacy_plugin.html`)
   const title = page.locator('h1')
   await expect(title).toHaveText('Source Simple Plugin Demo')
 
@@ -65,7 +65,7 @@ test('parent loads plugin and completes handshake', async ({ page, baseURL }) =>
  * The plugin will update the content displayed to reflect that.
  */
 test('when parent sends updated auth the client has it available', async ({ page, baseURL }) => {
-  await page.goto(`${baseURL}/plugin_parent.html?plugin=plugin.html&scenario=send_auth`)
+  await page.goto(`${baseURL}/plugin_parent.html?plugin=legacy_plugin.html&scenario=send_auth`)
 
   const iframeHandle = await page.$('iframe')
   const frame = await iframeHandle.contentFrame()
@@ -100,7 +100,9 @@ test('when parent sends updated context the client calls the callback', async ({
   page,
   baseURL,
 }) => {
-  await page.goto(`${baseURL}/plugin_parent.html?plugin=plugin.html&scenario=send_new_context`)
+  await page.goto(
+    `${baseURL}/plugin_parent.html?plugin=legacy_plugin.html&scenario=send_new_context`,
+  )
 
   const iframeHandle = await page.$('iframe')
   const frame = await iframeHandle.contentFrame()
@@ -132,7 +134,7 @@ test('when parent sends updated context the client calls the callback', async ({
  * The client should just ignore that message and correctly handle other valid messages
  */
 test('when parent sends non-JSON the client ignores it', async ({ page, baseURL }) => {
-  await page.goto(`${baseURL}/plugin_parent.html?plugin=plugin.html&scenario=send_non_json`)
+  await page.goto(`${baseURL}/plugin_parent.html?plugin=legacy_plugin.html&scenario=send_non_json`)
 
   const iframeHandle = await page.$('iframe')
   const frame = await iframeHandle.contentFrame()
@@ -164,7 +166,9 @@ test('when parent sends non-JSON the client ignores it', async ({ page, baseURL 
  * The client should just ignore that message and correctly handle other valid messages
  */
 test('when parent sends non-envelope the client ignores it', async ({ page, baseURL }) => {
-  await page.goto(`${baseURL}/plugin_parent.html?plugin=plugin.html&scenario=send_non_envelope`)
+  await page.goto(
+    `${baseURL}/plugin_parent.html?plugin=legacy_plugin.html&scenario=send_non_envelope`,
+  )
 
   const iframeHandle = await page.$('iframe')
   const frame = await iframeHandle.contentFrame()
@@ -201,7 +205,7 @@ test('when init has not completed client gets exceptions for accessing current c
   baseURL,
 }) => {
   await page.goto(
-    `${baseURL}/plugin_parent.html?plugin=plugin.html&scenario=access_before_init&initDelay=10000`,
+    `${baseURL}/plugin_parent.html?plugin=legacy_plugin.html&scenario=access_before_init&initDelay=10000`,
   )
 
   const iframeHandle = await page.$('iframe')
