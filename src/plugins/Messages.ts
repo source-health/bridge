@@ -2,7 +2,7 @@
  * on-the-wire JSON-stringified representations of the message payloads
  */
 
-import { AuthPayload } from '../Messages'
+import { AuthPayload } from '../types'
 
 export interface ContextPayload {
   member?: string

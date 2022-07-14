@@ -1,5 +1,11 @@
 import { test, expect } from '@playwright/test'
 
+const authFromParent = {
+  expiresAt: '2022-01-06T20:48:14.919Z',
+  token:
+    'eyJhbGciOiJFZERTQSIsImNydiI6IkVkMjU1MTkiLCJraWQiOiJhcHBfMTIzIn0.eyJwdXJwb3NlIjoidmVyaWZpY2F0aW9uIiwiYXBwIjoiYXBwXzEyMyIsInVzciI6InVzcl8xMjMiLCJpYXQiOjE2NDE1MDExOTQsImlzcyI6InNvdXJjZWhlYWx0aCIsImV4cCI6MTY0MTUwMjA5NH0.3oYyGr4XHSuZENF121lYVIumI32ZdRH6RV5b0emG8p_yHuPm-TL1dSU4Y3v6OYnzPs0qi2H8sTUCruXNg4Z0CA',
+}
+
 /**
  * Testing this kind of bidirectional iframe communication presents a challenge. We have created plugin_parent.html /
  * plugin_parent.ts and plugin.html / plugin.ts, and then for each given test scenario we set a 'scenario' query param
@@ -16,10 +22,11 @@ import { test, expect } from '@playwright/test'
  *    - sendRequest()
  *    - sendEvent()
  *    - request/response handling
- *  SourceBridge:
+ *  PluginBridge:
  *  - init() initiates handshake and response triggers onContextUpdate callback
  *  - ready() sends ready event
- *  - currentToken(), currentContext() and info() all work after the callback
+ *  - currentToken() retrieves token via request/response
+ *  - currentContext() and info() all work after the callback
  */
 test('parent loads plugin and completes handshake', async ({ page, baseURL }) => {
   await page.goto(`${baseURL}/plugin_parent.html?plugin=legacy_plugin.html`)
@@ -33,11 +40,8 @@ test('parent loads plugin and completes handshake', async ({ page, baseURL }) =>
   const frameTitle = frame.locator('h1')
   await expect(frameTitle).toHaveText('Simple Demo Plugin iframe')
 
-  const content = frame.locator('#content')
-  await expect(content).toContainText('Data that was passed from the parent window')
-
   // Parse the data displayed in the iframe and make sure it's what we expect
-  const data = frame.locator('#data')
+  const data = frame.locator('#content .data')
   await expect(data).toContainText('token')
   const parsed = JSON.parse(await data.innerText())
   expect(parsed).toStrictEqual({
@@ -47,49 +51,12 @@ test('parent loads plugin and completes handshake', async ({ page, baseURL }) =>
       surface: 'main_tab',
     },
     context: { member: 'mem_123' },
-    token: {
-      token:
-        'eyJhbGciOiJFZERTQSIsImNydiI6IkVkMjU1MTkiLCJraWQiOiJhcHBfMTIzIn0.eyJwdXJwb3NlIjoidmVyaWZpY2F0aW9uIiwiYXBwIjoiYXBwXzEyMyIsInVzciI6InVzcl8xMjMiLCJpYXQiOjE2NDE0MjEwODksImlzcyI6InNvdXJjZWhlYWx0aCIsImV4cCI6MTY0MTQyMTk4OX0.ebL6cmBNt1vVkzvdZ6KS_Rv95jAM972G1Sz8aXDCuoxMDqtx1Hf7OqM2LzEL-31C_R58bSaqmvrAKjqWVgkKBQ',
-
-      expiresAt: '2022-01-05T22:33:09.485Z',
-    },
+    token: authFromParent,
   })
 
   // parent should indicate that 'ready' event was received
   const ready = page.locator('#ready')
   await expect(ready).toContainText('ready')
-})
-
-/**
- * In this scenario, the parent sends a new auth token after 1s.
- * The plugin will update the content displayed to reflect that.
- */
-test('when parent sends updated auth the client has it available', async ({ page, baseURL }) => {
-  await page.goto(`${baseURL}/plugin_parent.html?plugin=legacy_plugin.html&scenario=send_auth`)
-
-  const iframeHandle = await page.$('iframe')
-  const frame = await iframeHandle.contentFrame()
-  await expect(frame.locator('#content')).toContainText(
-    'Data that was passed from the parent window',
-  )
-
-  const data = frame.locator('#data')
-  await expect(data).toContainText('2022-01-06T20:48:14.919Z') // This is expires_at for the updated auth token
-  const parsed = JSON.parse(await data.innerText())
-  expect(parsed).toStrictEqual({
-    info: {
-      application: 'app_123',
-      viewKey: 'summary',
-      surface: 'main_tab',
-    },
-    context: { member: 'mem_123' },
-    token: {
-      // 'token' and 'expiresAt' are different
-      token:
-        'eyJhbGciOiJFZERTQSIsImNydiI6IkVkMjU1MTkiLCJraWQiOiJhcHBfMTIzIn0.eyJwdXJwb3NlIjoidmVyaWZpY2F0aW9uIiwiYXBwIjoiYXBwXzEyMyIsInVzciI6InVzcl8xMjMiLCJpYXQiOjE2NDE1MDExOTQsImlzcyI6InNvdXJjZWhlYWx0aCIsImV4cCI6MTY0MTUwMjA5NH0.3oYyGr4XHSuZENF121lYVIumI32ZdRH6RV5b0emG8p_yHuPm-TL1dSU4Y3v6OYnzPs0qi2H8sTUCruXNg4Z0CA',
-      expiresAt: '2022-01-06T20:48:14.919Z',
-    },
-  })
 })
 
 /**
@@ -106,11 +73,8 @@ test('when parent sends updated context the client calls the callback', async ({
 
   const iframeHandle = await page.$('iframe')
   const frame = await iframeHandle.contentFrame()
-  await expect(frame.locator('#content')).toContainText(
-    'Data that was passed from the parent window',
-  )
   // Parse the data displayed in the iframe and make sure it's what we expect
-  const data = frame.locator('#data')
+  const data = frame.locator('#content .data')
   await expect(data).toContainText('mem_other')
   const parsed = JSON.parse(await data.innerText())
   expect(parsed).toStrictEqual({
@@ -120,12 +84,7 @@ test('when parent sends updated context the client calls the callback', async ({
       surface: 'main_tab',
     },
     context: { member: 'mem_other' }, // This is different
-    token: {
-      token:
-        'eyJhbGciOiJFZERTQSIsImNydiI6IkVkMjU1MTkiLCJraWQiOiJhcHBfMTIzIn0.eyJwdXJwb3NlIjoidmVyaWZpY2F0aW9uIiwiYXBwIjoiYXBwXzEyMyIsInVzciI6InVzcl8xMjMiLCJpYXQiOjE2NDE0MjEwODksImlzcyI6InNvdXJjZWhlYWx0aCIsImV4cCI6MTY0MTQyMTk4OX0.ebL6cmBNt1vVkzvdZ6KS_Rv95jAM972G1Sz8aXDCuoxMDqtx1Hf7OqM2LzEL-31C_R58bSaqmvrAKjqWVgkKBQ',
-
-      expiresAt: '2022-01-05T22:33:09.485Z',
-    },
+    token: authFromParent,
   })
 })
 
@@ -138,11 +97,8 @@ test('when parent sends non-JSON the client ignores it', async ({ page, baseURL 
 
   const iframeHandle = await page.$('iframe')
   const frame = await iframeHandle.contentFrame()
-  await expect(frame.locator('#content')).toContainText(
-    'Data that was passed from the parent window',
-  )
   // Parse the data displayed in the iframe and make sure it's what we expect (same as if no garbage was sent)
-  const data = frame.locator('#data')
+  const data = frame.locator('#content .data')
   await expect(data).toContainText('token')
   const parsed = JSON.parse(await data.innerText())
   expect(parsed).toStrictEqual({
@@ -152,12 +108,7 @@ test('when parent sends non-JSON the client ignores it', async ({ page, baseURL 
       surface: 'main_tab',
     },
     context: { member: 'mem_123' },
-    token: {
-      token:
-        'eyJhbGciOiJFZERTQSIsImNydiI6IkVkMjU1MTkiLCJraWQiOiJhcHBfMTIzIn0.eyJwdXJwb3NlIjoidmVyaWZpY2F0aW9uIiwiYXBwIjoiYXBwXzEyMyIsInVzciI6InVzcl8xMjMiLCJpYXQiOjE2NDE0MjEwODksImlzcyI6InNvdXJjZWhlYWx0aCIsImV4cCI6MTY0MTQyMTk4OX0.ebL6cmBNt1vVkzvdZ6KS_Rv95jAM972G1Sz8aXDCuoxMDqtx1Hf7OqM2LzEL-31C_R58bSaqmvrAKjqWVgkKBQ',
-
-      expiresAt: '2022-01-05T22:33:09.485Z',
-    },
+    token: authFromParent,
   })
 })
 
@@ -172,11 +123,8 @@ test('when parent sends non-envelope the client ignores it', async ({ page, base
 
   const iframeHandle = await page.$('iframe')
   const frame = await iframeHandle.contentFrame()
-  await expect(frame.locator('#content')).toContainText(
-    'Data that was passed from the parent window',
-  )
   // Parse the data displayed in the iframe and make sure it's what we expect (same as if no garbage was sent)
-  const data = frame.locator('#data')
+  const data = frame.locator('#content .data')
   await expect(data).toContainText('token')
   const parsed = JSON.parse(await data.innerText())
   expect(parsed).toStrictEqual({
@@ -186,12 +134,7 @@ test('when parent sends non-envelope the client ignores it', async ({ page, base
       surface: 'main_tab',
     },
     context: { member: 'mem_123' },
-    token: {
-      token:
-        'eyJhbGciOiJFZERTQSIsImNydiI6IkVkMjU1MTkiLCJraWQiOiJhcHBfMTIzIn0.eyJwdXJwb3NlIjoidmVyaWZpY2F0aW9uIiwiYXBwIjoiYXBwXzEyMyIsInVzciI6InVzcl8xMjMiLCJpYXQiOjE2NDE0MjEwODksImlzcyI6InNvdXJjZWhlYWx0aCIsImV4cCI6MTY0MTQyMTk4OX0.ebL6cmBNt1vVkzvdZ6KS_Rv95jAM972G1Sz8aXDCuoxMDqtx1Hf7OqM2LzEL-31C_R58bSaqmvrAKjqWVgkKBQ',
-
-      expiresAt: '2022-01-05T22:33:09.485Z',
-    },
+    token: authFromParent,
   })
 })
 
@@ -210,13 +153,12 @@ test('when init has not completed client gets exceptions for accessing current c
 
   const iframeHandle = await page.$('iframe')
   const frame = await iframeHandle.contentFrame()
-  const data = frame.locator('#data')
+  const data = frame.locator('#content .data')
   await expect(data).toContainText('errors')
   const parsed = JSON.parse(await data.innerText())
   expect(parsed).toStrictEqual({
     errors: [
       'SourceBridge is not yet initialized. Please call `init()` before currentContext()',
-      'SourceBridge is not yet initialized. Please call `init()` before currentToken()',
       'SourceBridge is not yet initialized. Please call `init()` before info()',
     ],
   })

@@ -1,4 +1,5 @@
-import { Auth, SourceEmbedded } from '../SourceEmbedded'
+import { BridgeGuest } from '../BridgeGuest'
+import { Auth } from '../types'
 
 import { ContextPayload, HelloPayload, PluginInfoPayload } from './Messages'
 
@@ -23,7 +24,7 @@ class PluginBridgeAPI {
     if (onContextUpdate) {
       this.onContextCallbacks.push(onContextUpdate)
     }
-    const helloPayload = await SourceEmbedded.init<HelloPayload>({
+    const helloPayload = await BridgeGuest.init<HelloPayload>({
       eventHandlers: {
         context: async (payload) => this.handleNewContext(payload as ContextPayload),
       },
@@ -38,15 +39,11 @@ class PluginBridgeAPI {
   }
 
   public ready(): void {
-    SourceEmbedded.ready()
+    BridgeGuest.ready()
   }
 
-  // This is async because we intend to add 'fetch on demand' when the current token is
-  // expired (e.g. if the tab has been throttled by the browser, or the computer has been
-  // suspended.)
-  // eslint-disable-next-line @typescript-eslint/require-await
   public async currentToken(): Promise<Auth> {
-    return await SourceEmbedded.currentToken()
+    return await BridgeGuest.currentToken()
   }
 
   public currentContext(): Context {
