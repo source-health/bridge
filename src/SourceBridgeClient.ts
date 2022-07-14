@@ -1,5 +1,4 @@
 import { EventEnvelope, ResponseEnvelope } from './Envelope'
-import { MessageType } from './MessageType'
 
 type ResolveFn<T> = (value: T) => void
 type OnMessageFn = (envelope: EventEnvelope) => Promise<void>
@@ -9,7 +8,7 @@ export class SourceBridgeClient {
   private openRequests: Map<string, ResolveFn<unknown>> = new Map()
 
   // Map where we keep track of event subscriptions
-  private messageCallbacks: Map<MessageType, OnMessageFn[]> = new Map()
+  private messageCallbacks: Map<string, OnMessageFn[]> = new Map()
 
   constructor() {
     window.addEventListener('message', (event) => {
@@ -33,7 +32,7 @@ export class SourceBridgeClient {
     return promise
   }
 
-  public onEvent(type: MessageType, callback: OnMessageFn): void {
+  public onEvent(type: string, callback: OnMessageFn): void {
     const callbacks = this.messageCallbacks.get(type)
     if (callbacks) {
       callbacks.push(callback)

@@ -1,15 +1,15 @@
 /**
- * The main bundle for iframe.e2e.html, which is a simple plugin that helps us write E2E
+ * The main bundle for legacy_plugin.html, which is a simple plugin that helps us write E2E
  * tests of the plugin functionality.
  *
- * This test uses the 'new style' PluginBridge API, not in the backwards-compatible way, which is
- * tested in the 'legacy_plugin' tests.
+ * 'Legacy' here means this was written with the original API for SourceBridge < 0.1, which is still
+ * supported by the SourcePlugin class but no longer documented.
  *
  * Rather than hitting a demo backend, this plugin just displays the data received from the
  * parent window.
  */
 
-import { Context, PluginBridge } from '../../src/plugins/PluginBridge'
+import { PluginBridge } from '../../src/plugins'
 
 async function replaceContent(data: Record<string, unknown>): Promise<void> {
   var contentDiv = document.querySelector('#content')
@@ -66,7 +66,8 @@ async function init() {
   const { initDelay, readyDelay, scenario } = getConfig()
   const errors: string[] = []
 
-  const onContextUpdate = async (context: Context) => {
+  // Subscribe to updates from the parent window.
+  await PluginBridge.onContextUpdate(async (context) => {
     // Display the data we got from the parent window
     replaceContent({
       info: PluginBridge.info(),
@@ -93,14 +94,14 @@ async function init() {
         })
       }, 1_000)
     }
-  }
+  })
 
   if (initDelay) {
     console.log(`[iframe] Delaying init() by ${initDelay}ms`)
   }
   setTimeout(async () => {
     // Kick off the initial handshake, which will lead to the context update callback being called.
-    const info = await PluginBridge.init(onContextUpdate)
+    const info = await PluginBridge.init()
   }, initDelay)
 
   window.addEventListener('load', async () => {

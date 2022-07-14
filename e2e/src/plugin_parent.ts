@@ -93,18 +93,22 @@ export function hi() {
 }
 
 export async function init() {
-  var iframeHtml = '/plugin.html'
-  // Default iframe base url is same as the parent, which works in Glitch
+  const urlParams = new URLSearchParams(window.location.search)
+  // We use the 'scenario' query param to trigger different behavior
+  const scenario = urlParams.get('scenario')
+
+  // We get the plugin to load from the 'plugin' URL param
+  var iframeHtml = urlParams.get('plugin') ?? 'plugin.html'
+  console.log('plugin:', iframeHtml)
+
+  // Default iframe base url is same as the parent
   var iframeOrigin = window.location.protocol + '//' + window.location.host
-  var iframeUrl = new URL(iframeOrigin + iframeHtml)
+  var iframeUrl = new URL(iframeOrigin + '/' + iframeHtml)
 
   // Pass through the query params
-  const urlParams = new URLSearchParams(window.location.search)
   for (const entry of urlParams.entries()) {
     iframeUrl.searchParams.append(entry[0], entry[1])
   }
-  // We use the 'scenario' query param to trigger different behavior
-  const scenario = urlParams.get('scenario')
 
   var iframe = document.createElement('iframe')
   iframe.id = 'iframe1'
