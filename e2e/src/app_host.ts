@@ -33,11 +33,10 @@ export function startGuest(guestName: string, dataElement: string): void {
     helloTimeout: 1_000,
     readyTimeout: 2_000,
     getToken,
-    onError: async (thisError) => {
+    onError: (thisError) => {
       console.error('onError: ', thisError)
       error = thisError
       refresh()
-      await Promise.resolve()
     },
     onReady: async () => {
       console.log('[host] guest says ready')

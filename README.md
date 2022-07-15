@@ -31,7 +31,8 @@ The host application creates an iframe with the guest's URL, and then instantiat
 communication with the guest application inside the iframe.
 
 ```typescript
-// See
+require { BridgeHost } from '@source-health/bridge'
+// Our E2E tests have a helper method that creates the iframe in the DOM:
 const { iframe, url } = await createIFrame('app_guest.html')
 
 const guest = new BridgeHost({
