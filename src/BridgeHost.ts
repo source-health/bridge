@@ -17,7 +17,7 @@ interface BridgeHostOptions {
   readonly helloTimeout: number
   readonly readyTimeout: number
   getToken: GetTokenFn
-  onError: (error: BridgeError) => void
+  onError: (error: BridgeError) => Promise<void>
   onHello?: () => Promise<unknown>
   onReady?: () => Promise<void>
   eventHandlers?: Record<string, AnyEventHandler>

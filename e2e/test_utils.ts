@@ -1,4 +1,4 @@
-import { expect, Page } from '@playwright/test'
+import { expect, Frame, Page } from '@playwright/test'
 
 /**
  * This file contains utils used by e2e test code (should not import from the main source bridge codebase
@@ -8,7 +8,7 @@ import { expect, Page } from '@playwright/test'
  * Retrieve and parse the JSON from the above replaceContent
  */
 export async function getData(
-  page: Page,
+  page: Page | Frame,
   expectText: string | RegExp,
   selector: string = '#content',
 ): Promise<Record<string, unknown>> {

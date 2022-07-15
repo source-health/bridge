@@ -1,25 +1,28 @@
-import { Auth, AuthPayload, Event, Request, Response, BridgeGuest } from '../../src'
-import {
-  FooEvent,
-  FooPayload,
-  MyRequestPayload,
-  MyResponse,
-  MyResponsePayload,
-} from './app_messages'
+import { Auth, BridgeGuest } from '../../src'
+
+import { FooPayload, MyRequestPayload, MyResponse, MyResponsePayload } from './app_messages'
 import { replaceContent } from './utils'
 
-async function handleFoo(event: FooEvent): Promise<void> {
-  replaceContent({
-    auth: await BridgeGuest.currentToken(),
-    foo: event.payload,
-  })
-}
-
 export async function init(): Promise<void> {
+  console.log('[guest] calling init()')
+
   let foo: FooPayload | null = null
   let auth: Auth | null = null
   let initResponse: unknown = null
   let myResponse: MyResponsePayload | null = null
+  let autoReady = true
+
+  const urlParams = new URLSearchParams(window.location.search)
+  // We use the 'scenario' query param to trigger different behavior
+  const scenario = urlParams.get('scenario')
+  const guestName = urlParams.get('guestName') ?? 'guest'
+
+  if (scenario === 'no_hello') {
+    console.log('[guest] skipping hello')
+    return
+  } else if (scenario === 'no_ready') {
+    autoReady = false
+  }
 
   function refresh() {
     replaceContent({
@@ -30,13 +33,14 @@ export async function init(): Promise<void> {
     })
   }
 
-  console.log('[guest] calling init()')
   initResponse = await BridgeGuest.init({
+    autoReady,
     eventHandlers: {
       foo: async (event: FooPayload) => {
         console.log('[guest] received foo', event)
         foo = event
-        await refresh()
+        refresh()
+        await Promise.resolve()
       },
     },
   })
@@ -45,15 +49,18 @@ export async function init(): Promise<void> {
   myResponse = (
     await BridgeGuest.sendRequest<'my', MyRequestPayload, MyResponse>('my', {
       value: 'hi there',
-      sender: 'guest',
+      sender: guestName,
     })
   ).payload
 
-  await refresh()
+  refresh()
 
-  BridgeGuest.sendEvent<'foo', FooPayload>('foo', { value: 'hello to my host', sender: 'guest' })
+  BridgeGuest.sendEvent<'foo', FooPayload>('foo', {
+    value: 'hello to my host',
+    sender: guestName,
+  })
 
-  await refresh()
+  refresh()
 }
 
-init()
+void init()

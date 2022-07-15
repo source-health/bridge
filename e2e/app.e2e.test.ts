@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test'
-import { hostname } from 'os'
 import { getData } from './test_utils'
 
 const authFromParent = {
@@ -33,13 +32,13 @@ test('host loads guest, completes handshake, exchanges auth, exchanges request, 
 
   // Grab a handle to the iframe's window, which will be a Page we can assert on
   const iframeHandle = await page.$('iframe')
-  const frame = await iframeHandle.contentFrame()
+  const frame = await iframeHandle?.contentFrame()
 
-  const frameTitle = frame.locator('h1')
+  const frameTitle = frame!.locator('h1')
   await expect(frameTitle).toHaveText('Source Guest Test')
 
   // Parse the data displayed in the iframe and make sure it's what we expect
-  const data = await getData(frame, /sum[^]*.*hello to my guest/)
+  const data = await getData(frame!, /sum[^]*.*hello to my guest/)
   expect(data).toStrictEqual({
     auth: authFromParent,
     myResponse: {
@@ -48,7 +47,7 @@ test('host loads guest, completes handshake, exchanges auth, exchanges request, 
     },
     foo: {
       sender: 'host',
-      value: 'hello to my guest',
+      value: 'hello to my guest alice',
     },
   })
 
@@ -57,8 +56,114 @@ test('host loads guest, completes handshake, exchanges auth, exchanges request, 
   await expect(hostData).toStrictEqual({
     ready: true,
     foo: {
-      sender: 'guest',
+      sender: 'alice',
       value: 'hello to my host',
     },
+    error: null,
+  })
+})
+
+test('guest does not send hello', async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}/app_host.html?scenario=no_hello`)
+  const title = page.locator('h1')
+  await expect(title).toHaveText('Source Host Test')
+
+  // Grab a handle to the iframe's window, which will be a Page we can assert on
+  const iframeHandle = await page.$('iframe')
+  const frame = await iframeHandle!.contentFrame()
+
+  // Parse the data from the host page and make sure it's what we expect
+  const hostData = await getData(page, 'not_started', '#host_content')
+  await expect(hostData).toStrictEqual({
+    ready: false,
+    foo: null,
+    error: {
+      cause: 'not_started',
+    },
+  })
+})
+
+test('guest does not send ready', async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}/app_host.html?scenario=no_ready`)
+  const title = page.locator('h1')
+  await expect(title).toHaveText('Source Host Test')
+
+  // Grab a handle to the iframe's window, which will be a Page we can assert on
+  const iframeHandle = await page.$('iframe')
+  const frame = await iframeHandle!.contentFrame()
+
+  // Parse the data from the host page and make sure it's what we expect
+  const hostData = await getData(page, 'not_ready', '#host_content')
+  await expect(hostData).toStrictEqual({
+    ready: false,
+    foo: {
+      sender: 'alice',
+      value: 'hello to my host',
+    },
+    error: {
+      cause: 'not_ready',
+    },
+  })
+})
+
+test('two guests', async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}/app_host.html?scenario=two_guests`)
+  const title = page.locator('h1')
+  await expect(title).toHaveText('Source Host Test')
+
+  // Grab a handle to the iframe's window, which will be a Page we can assert on
+  const iframeHandle = await page.$('iframe.alice')
+  const aliceFrame = await iframeHandle!.contentFrame()
+
+  // Parse the data displayed in the alice iframe and make sure it's what we expect
+  let data = await getData(aliceFrame!, /sum[^]*.*hello to my guest/)
+  expect(data).toStrictEqual({
+    auth: authFromParent,
+    myResponse: {
+      sum: 1,
+      sender: 'host',
+    },
+    foo: {
+      sender: 'host',
+      value: 'hello to my guest alice',
+    },
+  })
+
+  // Parse the data from the host page and make sure it's what we expect
+  let hostData = await getData(page, 'hello to my host', '#host_content')
+  await expect(hostData).toStrictEqual({
+    ready: true,
+    foo: {
+      sender: 'alice',
+      value: 'hello to my host',
+    },
+    error: null,
+  })
+
+  const bobFrame = await (await page.$('iframe.bob'))!.contentFrame()
+
+  // Parse the data displayed in the bob iframe and make sure it's what we expect
+  data = await getData(bobFrame!, /sum[^]*.*hello to my guest/)
+  expect(data).toStrictEqual({
+    auth: authFromParent,
+    myResponse: {
+      sum: 1,
+      sender: 'host',
+    },
+    foo: {
+      sender: 'host',
+      value: 'hello to my guest bob',
+    },
+  })
+
+  // Parse the data from the host page for bob and make sure it's what we expect
+  hostData = await getData(page, 'hello to my host', '#host_content_2')
+  await expect(hostData).toStrictEqual({
+    ready: true,
+    foo: {
+      sender: 'bob',
+      value: 'hello to my host',
+    },
+    error: null,
   })
 })

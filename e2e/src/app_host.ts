@@ -1,59 +1,68 @@
-import { Envelope } from '../../src'
-import { BridgeHost } from '../../src/BridgeHost'
-import { FooEvent, FooPayload, MyResponsePayload } from './app_messages'
+import { BridgeError, BridgeHost, Envelope } from '../../src'
+
+import { FooPayload, MyResponsePayload } from './app_messages'
 import { createIFrame, getToken, replaceContent } from './utils'
 
-export async function onMyRequest(request: Envelope): Promise<MyResponsePayload> {
-  return {
+export async function onMyRequest(_request: Envelope): Promise<MyResponsePayload> {
+  return await Promise.resolve({
     sum: 1,
     sender: 'host',
-  }
+  })
 }
 
-export async function init(): Promise<void> {
-  console.log('[host] init')
+export function startGuest(guestName: string, dataElement: string): void {
   let foo: FooPayload | null = null
-  let ready: boolean = false
+  let ready = false
+  let error: BridgeError | null = null
 
   function refresh() {
     replaceContent(
       {
         ready,
         foo,
+        error,
       },
-      '#host_content',
+      dataElement,
     )
   }
 
-  const { iframe, url } = await createIFrame('app_guest.html')
+  const { iframe, url } = createIFrame('app_guest.html', guestName)
   const guest = new BridgeHost({
     iframe,
     url,
-    helloTimeout: 2_000,
-    readyTimeout: 4_000,
+    helloTimeout: 1_000,
+    readyTimeout: 2_000,
     getToken,
-    onError: (error) => {
-      console.error('onError: ', error)
+    onError: async (thisError) => {
+      console.error('onError: ', thisError)
+      error = thisError
+      refresh()
+      await Promise.resolve()
     },
     onReady: async () => {
       console.log('[host] guest says ready')
       ready = true
-      await refresh()
-      guest.sendEvent<'foo', FooPayload>('foo', { value: 'hello to my guest', sender: 'host' })
+      refresh()
+      guest.sendEvent<'foo', FooPayload>('foo', {
+        value: `hello to my guest ${guestName}`,
+        sender: 'host',
+      })
+      await Promise.resolve()
     },
     requestHandlers: {
-      my: async (request: Envelope) => {
-        return {
+      my: async (_request: Envelope) => {
+        return await Promise.resolve({
           sum: 1,
           sender: 'host',
-        }
+        })
       },
     },
     eventHandlers: {
       foo: async (event: FooPayload) => {
         console.log('[host] received foo')
         foo = event
-        await refresh()
+        refresh()
+        await Promise.resolve()
       },
     },
   })
@@ -61,4 +70,17 @@ export async function init(): Promise<void> {
   guest.boot()
 }
 
-init()
+function init(): void {
+  console.log('[host] init')
+  const urlParams = new URLSearchParams(window.location.search)
+  // We use the 'scenario' query param to trigger different behavior
+  const scenario = urlParams.get('scenario')
+
+  startGuest('alice', '#host_content')
+
+  if (scenario === 'two_guests') {
+    startGuest('bob', '#host_content_2')
+  }
+}
+
+void init()
