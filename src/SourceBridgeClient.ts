@@ -65,8 +65,6 @@ export class SourceBridgeClient {
 
   private async handleEnvelope(event: MessageEvent<unknown>): Promise<void> {
     if (event.source !== this.otherWindow) {
-      // TODO remove this log
-      console.log('[SourceBridge] Ignoring message event from a different window.')
       return
     }
     const envelope = this.parseEnvelope(event.data)
@@ -107,18 +105,20 @@ export class SourceBridgeClient {
   }
 
   private parseEnvelope(data: unknown): Partial<ResponseEnvelope> | null {
+    if (!data || typeof data !== 'string') {
+      return null
+    }
+    if (data[0] !== '{') {
+      return null
+    }
+
     try {
-      const envelope = JSON.parse(data as string) as Partial<Envelope>
+      const envelope = JSON.parse(data) as Partial<Envelope>
       if (envelope.id && envelope.type) {
         return envelope
       }
-      console.error(
-        '[SourceBridge] received non-Source-envelope message: ',
-        JSON.stringify(envelope),
-      )
       return null
     } catch (err) {
-      console.warn('[SourceBridge] received non-JSON message: ', data, err)
       return null
     }
   }
