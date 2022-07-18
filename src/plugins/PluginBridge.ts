@@ -15,7 +15,7 @@ export interface PluginInfo {
 
 type OnContextFn = (context: Context) => Promise<void>
 
-class PluginBridgeAPI {
+export class PluginBridge {
   private onContextCallbacks: OnContextFn[] = []
   private context?: Context
   private pluginInfo?: PluginInfo
@@ -89,5 +89,3 @@ class PluginBridgeAPI {
     return mapped
   }
 }
-
-export const PluginBridge = new PluginBridgeAPI()

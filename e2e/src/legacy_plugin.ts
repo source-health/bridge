@@ -12,6 +12,8 @@
 import { PluginBridge } from '../../src/plugins'
 import { replaceContent } from './utils'
 
+const pluginBridge = new PluginBridge()
+
 interface Config {
   initDelay: number
   readyDelay: number
@@ -44,12 +46,12 @@ async function init() {
   const errors: string[] = []
 
   // Subscribe to updates from the parent window.
-  await PluginBridge.onContextUpdate(async (context) => {
+  await pluginBridge.onContextUpdate(async (context) => {
     // Display the data we got from the parent window
     replaceContent({
-      info: PluginBridge.info(),
+      info: pluginBridge.info(),
       context,
-      token: await PluginBridge.currentToken(),
+      token: await pluginBridge.currentToken(),
     })
 
     if (readyDelay) {
@@ -57,7 +59,7 @@ async function init() {
     }
     setTimeout(async () => {
       // Call ready() to clear the loading state for the plugin
-      PluginBridge.ready()
+      pluginBridge.ready()
     }, readyDelay)
 
     // If the parent window is doing one of the 'scenarios' (set via query param) then let's refresh the content
@@ -65,9 +67,9 @@ async function init() {
     if (scenario === 'send_auth') {
       setInterval(async () => {
         replaceContent({
-          info: PluginBridge.info(),
-          context: PluginBridge.currentContext(),
-          token: await PluginBridge.currentToken(),
+          info: pluginBridge.info(),
+          context: pluginBridge.currentContext(),
+          token: await pluginBridge.currentToken(),
         })
       }, 1_000)
     }
@@ -78,13 +80,13 @@ async function init() {
   }
   setTimeout(async () => {
     // Kick off the initial handshake, which will lead to the context update callback being called.
-    const info = await PluginBridge.init()
+    const info = await pluginBridge.init()
   }, initDelay)
 
   window.addEventListener('load', async () => {
     if (scenario === 'access_before_init') {
       try {
-        PluginBridge.currentContext()
+        pluginBridge.currentContext()
       } catch (err: unknown) {
         if (err instanceof Error) {
           errors.push(err.message)
@@ -92,7 +94,7 @@ async function init() {
         }
       }
       try {
-        await PluginBridge.currentToken()
+        await pluginBridge.currentToken()
       } catch (err: unknown) {
         if (err instanceof Error) {
           errors.push(err.message)
@@ -100,7 +102,7 @@ async function init() {
         }
       }
       try {
-        PluginBridge.info()
+        pluginBridge.info()
       } catch (err: unknown) {
         if (err instanceof Error) {
           errors.push(err.message)

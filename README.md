@@ -189,29 +189,31 @@ Write a callback to handle context updates from the parent window. Note: after r
 application must call `PluginBridge.ready()` in order to clear the loading state and display the plugin. `ready()` is idempotent - you can call it more than once without any impact.
 
 ```typescript
+const pluginBridge = new PluginBridge()
+
 const onContextUpdate = async (context) => {
   // Handle the context, set and render your application
   await doSomeStuff(context.member)
 
   // Call ready() to clear the loading state for the plugin
-  PluginBridge.ready()
+  pluginBridge.ready()
 }
 ```
 
 Finally, kick off the handshake with the parent window (which will lead to the context callback being run):
 
 ```typescript
-await PluginBridge.init(onContextUpdate)
+await pluginBridge.init(onContextUpdate)
 ```
 
 If your plugin requires access to the PluginInfo, call:
 
 ```typescript
-const info: PluginInfo = PluginBridge.info()
+const info: PluginInfo = pluginBridge.info()
 
 // Also available:
-const context = PluginBridge.currentContext()
-const { token, expiresAt } = await PluginBridge.currentToken()
+const context = pluginBridge.currentContext()
+const { token, expiresAt } = await pluginBridge.currentToken()
 ```
 
 ## Plugin Developer Documentation

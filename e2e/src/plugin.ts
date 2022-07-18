@@ -9,8 +9,10 @@
  * parent window.
  */
 
-import { Context, PluginBridge } from '../../src/plugins/PluginBridge'
+import { Context, PluginBridge } from '../../src/plugins'
 import { replaceContent } from './utils'
+
+const pluginBridge = new PluginBridge()
 
 interface Config {
   initDelay: number
@@ -46,9 +48,9 @@ async function init() {
   const onContextUpdate = async (context: Context) => {
     // Display the data we got from the parent window
     replaceContent({
-      info: PluginBridge.info(),
+      info: pluginBridge.info(),
       context,
-      token: await PluginBridge.currentToken(),
+      token: await pluginBridge.currentToken(),
     })
 
     if (readyDelay) {
@@ -56,7 +58,7 @@ async function init() {
     }
     setTimeout(async () => {
       // Call ready() to clear the loading state for the plugin
-      PluginBridge.ready()
+      pluginBridge.ready()
     }, readyDelay)
   }
 
@@ -65,13 +67,13 @@ async function init() {
   }
   setTimeout(async () => {
     // Kick off the initial handshake, which will lead to the context update callback being called.
-    const info = await PluginBridge.init(onContextUpdate)
+    const info = await pluginBridge.init(onContextUpdate)
   }, initDelay)
 
   window.addEventListener('load', async () => {
     if (scenario === 'access_before_init') {
       try {
-        PluginBridge.currentContext()
+        pluginBridge.currentContext()
       } catch (err: unknown) {
         if (err instanceof Error) {
           errors.push(err.message)
@@ -79,7 +81,7 @@ async function init() {
         }
       }
       try {
-        await PluginBridge.currentToken()
+        await pluginBridge.currentToken()
       } catch (err: unknown) {
         if (err instanceof Error) {
           errors.push(err.message)
@@ -87,7 +89,7 @@ async function init() {
         }
       }
       try {
-        PluginBridge.info()
+        pluginBridge.info()
       } catch (err: unknown) {
         if (err instanceof Error) {
           errors.push(err.message)
