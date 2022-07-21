@@ -15,7 +15,7 @@
     "dist",
     "src"
   ],
-  "main": "dist/bridge.node.js",
+  "main": "dist/bridge.js",
   "typings": "dist/index.d.ts",
   "browser": "dist/bridge.js",
   "sideEffects": false,

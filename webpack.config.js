@@ -2,7 +2,7 @@ const { join } = require('path')
 
 function generateConfig(name) {
   const compress = name.indexOf('min') > -1
-  const target = name.indexOf('node') > -1 ? 'node' : 'web'
+  const target = 'web'
 
   return {
     mode: compress ? 'production' : 'development',
@@ -35,4 +35,4 @@ function generateConfig(name) {
   }
 }
 
-module.exports = ['bridge', 'bridge.min', 'bridge.node'].map((key) => generateConfig(key))
+module.exports = ['bridge', 'bridge.min'].map((key) => generateConfig(key))
