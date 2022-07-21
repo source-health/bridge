@@ -5,7 +5,7 @@
 Features:
 
 - Refactor SourceBridge into PluginBridge and BridgeGuest, a general iframe<->parent window communication library. The
-  PluginBridge API is backwards-compatible except for the import path
+  PluginBridge API is backwards-compatible except for the import path and needing to create an instance:
 
   ```typescript
   // Before
@@ -29,6 +29,4 @@ Maintenance:
 
 - Update all development dependencies to the latest versions.
 
-```
 
-```
