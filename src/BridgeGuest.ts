@@ -7,7 +7,7 @@ interface BridgeGuestOptions {
   autoReady: boolean
 }
 
-class BridgeGuestAPI {
+export class BridgeGuest {
   private client: SourceBridgeClient
 
   constructor(private readonly otherWindow: Window) {
@@ -81,7 +81,3 @@ class BridgeGuestAPI {
     }
   }
 }
-
-// As the guest app, we will only have one channel open, so we can create a global instance communicating with the
-// parent window.
-export const BridgeGuest = new BridgeGuestAPI(parent)

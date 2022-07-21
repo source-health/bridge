@@ -117,7 +117,7 @@ while it initializes.
 ### onHello callback (optional)
 
 If the guest application expects any data in the initial handshake, the response from the `onHello()` callback will be
-including in the `hello` response and available to the guest as the return value of `BridgeGuest.init()`.
+including in the `hello` response and available to the guest as the return value of `BridgeGuest::init()`.
 
 ### Event and Request handlers
 
@@ -134,14 +134,16 @@ the loading state and display the iframe, but this can be handled manually when 
 ```typescript
 import { BridgeGuest } from '@source-health/bridge'
 
-BridgeGuest.init({
+const bridge = new BridgeGuest(parent)
+
+bridge.init({
   autoReady: false,
   eventHandlers: {
     myEvent: async (event) => {
       // do something
       console.log('A myEvent was received')
       // maybe this is when we consider the iframe fully rendered?
-      BridgeGuest.ready()
+      bridge.ready()
     },
   },
 })
@@ -151,7 +153,7 @@ The BridgeGuest client can obtain a valid application token from the host. At an
 response has been received, you can obtain a valid token by calling:
 
 ```typescript
-const { token, expiresAt } = await BridgeGuest.currentToken()
+const { token, expiresAt } = await bridge.currentToken()
 ```
 
 These tokens expire within a few minutes. When you need a token (e.g. to inject

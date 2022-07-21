@@ -19,12 +19,17 @@ export class PluginBridge {
   private onContextCallbacks: OnContextFn[] = []
   private context?: Context
   private pluginInfo?: PluginInfo
+  private bridgeGuest: BridgeGuest
+
+  constructor() {
+    this.bridgeGuest = new BridgeGuest(parent)
+  }
 
   public async init(onContextUpdate?: OnContextFn): Promise<PluginInfo> {
     if (onContextUpdate) {
       this.onContextCallbacks.push(onContextUpdate)
     }
-    const helloPayload = await BridgeGuest.init<HelloPayload>({
+    const helloPayload = await this.bridgeGuest.init<HelloPayload>({
       eventHandlers: {
         context: async (payload) => this.handleNewContext(payload as ContextPayload),
       },
@@ -39,11 +44,11 @@ export class PluginBridge {
   }
 
   public ready(): void {
-    BridgeGuest.ready()
+    this.bridgeGuest.ready()
   }
 
   public async currentToken(): Promise<Auth> {
-    return await BridgeGuest.currentToken()
+    return await this.bridgeGuest.currentToken()
   }
 
   public currentContext(): Context {
