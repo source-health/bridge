@@ -3,6 +3,10 @@ import { Auth } from '../types'
 
 import { ContextPayload, HelloPayload, PluginInfoPayload } from './Messages'
 
+interface PluginBridgeOptions {
+  debug?: boolean
+}
+
 export interface Context {
   member?: string
 }
@@ -15,16 +19,21 @@ export interface PluginInfo {
 
 type OnContextFn = (context: Context) => Promise<void>
 
-class PluginBridgeAPI {
+export class PluginBridge {
   private onContextCallbacks: OnContextFn[] = []
   private context?: Context
   private pluginInfo?: PluginInfo
+  private bridgeGuest: BridgeGuest
+
+  constructor(readonly options: PluginBridgeOptions = {}) {
+    this.bridgeGuest = new BridgeGuest(parent, { debug: options.debug })
+  }
 
   public async init(onContextUpdate?: OnContextFn): Promise<PluginInfo> {
     if (onContextUpdate) {
       this.onContextCallbacks.push(onContextUpdate)
     }
-    const helloPayload = await BridgeGuest.init<HelloPayload>({
+    const helloPayload = await this.bridgeGuest.init<HelloPayload>({
       eventHandlers: {
         context: async (payload) => this.handleNewContext(payload as ContextPayload),
       },
@@ -39,16 +48,16 @@ class PluginBridgeAPI {
   }
 
   public ready(): void {
-    BridgeGuest.ready()
+    this.bridgeGuest.ready()
   }
 
   public async currentToken(): Promise<Auth> {
-    return await BridgeGuest.currentToken()
+    return await this.bridgeGuest.currentToken()
   }
 
   public currentContext(): Context {
     if (!this.context) {
-      console.error('[SourceBridge] called currentContext() before init().')
+      this.error('[SourceBridge] called currentContext() before init().')
       throw new Error(
         'SourceBridge is not yet initialized. Please call `init()` before currentContext()',
       )
@@ -58,7 +67,7 @@ class PluginBridgeAPI {
 
   public info(): PluginInfo {
     if (!this.pluginInfo) {
-      console.error('[SourceBridge] called info() before init().')
+      this.error('[SourceBridge] called info() before init().')
       throw new Error('SourceBridge is not yet initialized. Please call `init()` before info()')
     }
     return this.pluginInfo
@@ -74,7 +83,7 @@ class PluginBridgeAPI {
   }
 
   private async handleNewContext(context: ContextPayload): Promise<void> {
-    console.log('[SourceBridge] handling new context: ', context)
+    this.debug('[SourceBridge] handling new context: ', context)
     this.context = context
     await Promise.allSettled(this.onContextCallbacks.map((callback) => callback(context)))
   }
@@ -88,6 +97,17 @@ class PluginBridgeAPI {
     this.pluginInfo = mapped
     return mapped
   }
-}
 
-export const PluginBridge = new PluginBridgeAPI()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private debug(message: any, ...optionalParams: any[]): void {
+    if (this.options.debug === true) {
+      console.log(message, optionalParams)
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private error(message: any, ...optionalParams: any[]): void {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    console.log(message, ...optionalParams)
+  }
+}

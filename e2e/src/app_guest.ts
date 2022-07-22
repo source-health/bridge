@@ -5,6 +5,7 @@ import { replaceContent } from './utils'
 
 export async function init(): Promise<void> {
   console.log('[guest] calling init()')
+  const bridgeGuest = new BridgeGuest(parent, { debug: true })
 
   let foo: FooPayload | null = null
   let auth: Auth | null = null
@@ -33,7 +34,7 @@ export async function init(): Promise<void> {
     })
   }
 
-  initResponse = await BridgeGuest.init({
+  initResponse = await bridgeGuest.init({
     autoReady,
     eventHandlers: {
       foo: async (event: FooPayload) => {
@@ -45,9 +46,9 @@ export async function init(): Promise<void> {
     },
   })
 
-  auth = await BridgeGuest.currentToken()
+  auth = await bridgeGuest.currentToken()
   myResponse = (
-    await BridgeGuest.sendRequest<'my', MyRequestPayload, MyResponse>('my', {
+    await bridgeGuest.sendRequest<'my', MyRequestPayload, MyResponse>('my', {
       value: 'hi there',
       sender: guestName,
     })
@@ -55,7 +56,7 @@ export async function init(): Promise<void> {
 
   refresh()
 
-  BridgeGuest.sendEvent<'foo', FooPayload>('foo', {
+  bridgeGuest.sendEvent<'foo', FooPayload>('foo', {
     value: 'hello to my host',
     sender: guestName,
   })

@@ -3,21 +3,25 @@ import { generateRequestId } from './generateRequestId'
 import { AnyEventHandler, Auth, AuthenticationResponse, Event, HelloResponse } from './types'
 
 interface BridgeGuestOptions {
+  debug?: boolean
+}
+
+interface InitOptions {
   eventHandlers: Record<string, AnyEventHandler>
   autoReady: boolean
 }
 
-class BridgeGuestAPI {
+export class BridgeGuest {
   private client: SourceBridgeClient
 
-  constructor(private readonly otherWindow: Window) {
-    this.client = new SourceBridgeClient(otherWindow)
+  constructor(private readonly otherWindow: Window, readonly options: BridgeGuestOptions = {}) {
+    this.client = new SourceBridgeClient(otherWindow, { debug: options.debug })
   }
 
   /**
    * Initialize the bridge, perform the handshake with the host window, and return the host's response to `hello`.
    */
-  public async init<T>(options: Partial<BridgeGuestOptions> = {}): Promise<T> {
+  public async init<T>(options: Partial<InitOptions> = {}): Promise<T> {
     const realOptions = {
       autoReady: true,
       eventHandlers: {},
@@ -81,7 +85,3 @@ class BridgeGuestAPI {
     }
   }
 }
-
-// As the guest app, we will only have one channel open, so we can create a global instance communicating with the
-// parent window.
-export const BridgeGuest = new BridgeGuestAPI(parent)

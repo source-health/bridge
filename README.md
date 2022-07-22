@@ -117,7 +117,7 @@ while it initializes.
 ### onHello callback (optional)
 
 If the guest application expects any data in the initial handshake, the response from the `onHello()` callback will be
-including in the `hello` response and available to the guest as the return value of `BridgeGuest.init()`.
+including in the `hello` response and available to the guest as the return value of `BridgeGuest::init()`.
 
 ### Event and Request handlers
 
@@ -134,14 +134,16 @@ the loading state and display the iframe, but this can be handled manually when 
 ```typescript
 import { BridgeGuest } from '@source-health/bridge'
 
-BridgeGuest.init({
+const bridge = new BridgeGuest(parent)
+
+bridge.init({
   autoReady: false,
   eventHandlers: {
     myEvent: async (event) => {
       // do something
       console.log('A myEvent was received')
       // maybe this is when we consider the iframe fully rendered?
-      BridgeGuest.ready()
+      bridge.ready()
     },
   },
 })
@@ -151,7 +153,7 @@ The BridgeGuest client can obtain a valid application token from the host. At an
 response has been received, you can obtain a valid token by calling:
 
 ```typescript
-const { token, expiresAt } = await BridgeGuest.currentToken()
+const { token, expiresAt } = await bridge.currentToken()
 ```
 
 These tokens expire within a few minutes. When you need a token (e.g. to inject
@@ -189,29 +191,31 @@ Write a callback to handle context updates from the parent window. Note: after r
 application must call `PluginBridge.ready()` in order to clear the loading state and display the plugin. `ready()` is idempotent - you can call it more than once without any impact.
 
 ```typescript
+const pluginBridge = new PluginBridge()
+
 const onContextUpdate = async (context) => {
   // Handle the context, set and render your application
   await doSomeStuff(context.member)
 
   // Call ready() to clear the loading state for the plugin
-  PluginBridge.ready()
+  pluginBridge.ready()
 }
 ```
 
 Finally, kick off the handshake with the parent window (which will lead to the context callback being run):
 
 ```typescript
-await PluginBridge.init(onContextUpdate)
+await pluginBridge.init(onContextUpdate)
 ```
 
 If your plugin requires access to the PluginInfo, call:
 
 ```typescript
-const info: PluginInfo = PluginBridge.info()
+const info: PluginInfo = pluginBridge.info()
 
 // Also available:
-const context = PluginBridge.currentContext()
-const { token, expiresAt } = await PluginBridge.currentToken()
+const context = pluginBridge.currentContext()
+const { token, expiresAt } = await pluginBridge.currentToken()
 ```
 
 ## Plugin Developer Documentation
