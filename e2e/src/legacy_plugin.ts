@@ -3,37 +3,14 @@
  * tests of the plugin functionality.
  *
  * 'Legacy' here means this was written with the original API for SourceBridge < 0.1, which is still
- * supported by the SourcePlugin class but no longer documented.
+ * supported by the PluginBridge class but no longer documented.
  *
  * Rather than hitting a demo backend, this plugin just displays the data received from the
  * parent window.
  */
 
 import { PluginBridge } from '../../src/plugins'
-
-async function replaceContent(data: Record<string, unknown>): Promise<void> {
-  var contentDiv = document.querySelector('#content')
-  if (!contentDiv) {
-    console.error('Could not find #content div')
-    return
-  }
-
-  contentDiv.innerHTML = `Data that was passed from the parent window<br><pre id='data'>${JSON.stringify(
-    data,
-    null,
-    2,
-  )}</pre>`
-}
-
-async function displayError(error: string): Promise<void> {
-  var element = document.querySelector('#errors')
-  if (!element) {
-    console.error('Could not find #errors element')
-    return
-  }
-
-  element.innerHTML += `<p>${error}</p>`
-}
+import { replaceContent } from './utils'
 
 interface Config {
   initDelay: number

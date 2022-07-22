@@ -4,6 +4,8 @@
  * to get an iframe plugin bootstrapped and communicating over the SourceBridge API.
  */
 
+import { Envelope } from '../../src'
+
 const APPLICATION_ID = 'app_123' // matches the demo server's dummy config
 
 function generateRequestId(): string {
@@ -42,6 +44,14 @@ interface AuthEvent {
   payload: Auth
 }
 
+interface AuthResponse {
+  type: 'authentication'
+  id: string
+  in_reply_to: string
+  ok: boolean
+  payload: Auth
+}
+
 async function createHelloResponse(messageId: string): Promise<HelloResponse> {
   return {
     type: 'hello',
@@ -70,6 +80,20 @@ async function createAuthEvent(): Promise<AuthEvent> {
   return {
     type: 'authentication',
     id: generateRequestId(),
+    payload: {
+      token:
+        'eyJhbGciOiJFZERTQSIsImNydiI6IkVkMjU1MTkiLCJraWQiOiJhcHBfMTIzIn0.eyJwdXJwb3NlIjoidmVyaWZpY2F0aW9uIiwiYXBwIjoiYXBwXzEyMyIsInVzciI6InVzcl8xMjMiLCJpYXQiOjE2NDE1MDExOTQsImlzcyI6InNvdXJjZWhlYWx0aCIsImV4cCI6MTY0MTUwMjA5NH0.3oYyGr4XHSuZENF121lYVIumI32ZdRH6RV5b0emG8p_yHuPm-TL1dSU4Y3v6OYnzPs0qi2H8sTUCruXNg4Z0CA',
+      expires_at: new Date('2022-01-06T20:48:14.919Z'),
+    },
+  }
+}
+
+async function createAuthResponse(request: Envelope): Promise<AuthResponse> {
+  return {
+    type: 'authentication',
+    id: generateRequestId(),
+    in_reply_to: request.id,
+    ok: true,
     payload: {
       token:
         'eyJhbGciOiJFZERTQSIsImNydiI6IkVkMjU1MTkiLCJraWQiOiJhcHBfMTIzIn0.eyJwdXJwb3NlIjoidmVyaWZpY2F0aW9uIiwiYXBwIjoiYXBwXzEyMyIsInVzciI6InVzcl8xMjMiLCJpYXQiOjE2NDE1MDExOTQsImlzcyI6InNvdXJjZWhlYWx0aCIsImV4cCI6MTY0MTUwMjA5NH0.3oYyGr4XHSuZENF121lYVIumI32ZdRH6RV5b0emG8p_yHuPm-TL1dSU4Y3v6OYnzPs0qi2H8sTUCruXNg4Z0CA',
@@ -164,6 +188,10 @@ export async function init() {
       } else if (message.type === 'ready') {
         console.log("[parent] received 'ready' from iframe1")
         replaceContent('#ready', 'iframe sent ready')
+      } else if (message.type === 'authentication') {
+        const data = await createAuthResponse(message)
+        console.log("[parent] sending 'authentication' response")
+        destination.postMessage(JSON.stringify(data), iframeOrigin)
       } else {
         console.log(`[parent] unknown message type ${message.type}`)
       }

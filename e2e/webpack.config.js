@@ -10,6 +10,8 @@ module.exports = {
   mode: 'development',
   target: 'web',
   entry: {
+    app_guest: './src/app_guest.ts',
+    app_host: './src/app_host.ts',
     plugin: './src/plugin.ts',
     legacy_plugin: './src/legacy_plugin.ts',
     plugin_parent: './src/plugin_parent.ts',

@@ -10,30 +10,7 @@
  */
 
 import { Context, PluginBridge } from '../../src/plugins/PluginBridge'
-
-async function replaceContent(data: Record<string, unknown>): Promise<void> {
-  var contentDiv = document.querySelector('#content')
-  if (!contentDiv) {
-    console.error('Could not find #content div')
-    return
-  }
-
-  contentDiv.innerHTML = `Data that was passed from the parent window<br><pre id='data'>${JSON.stringify(
-    data,
-    null,
-    2,
-  )}</pre>`
-}
-
-async function displayError(error: string): Promise<void> {
-  var element = document.querySelector('#errors')
-  if (!element) {
-    console.error('Could not find #errors element')
-    return
-  }
-
-  element.innerHTML += `<p>${error}</p>`
-}
+import { replaceContent } from './utils'
 
 interface Config {
   initDelay: number
@@ -81,18 +58,6 @@ async function init() {
       // Call ready() to clear the loading state for the plugin
       PluginBridge.ready()
     }, readyDelay)
-
-    // If the parent window is doing one of the 'scenarios' (set via query param) then let's refresh the content
-    // of the iframe to reflect the current state.
-    if (scenario === 'send_auth') {
-      setInterval(async () => {
-        replaceContent({
-          info: PluginBridge.info(),
-          context: PluginBridge.currentContext(),
-          token: await PluginBridge.currentToken(),
-        })
-      }, 1_000)
-    }
   }
 
   if (initDelay) {
