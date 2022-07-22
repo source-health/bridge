@@ -34,6 +34,7 @@ export function startGuest(guestName: string, dataElement: string): void {
     readyTimeout: 2_000,
     getToken,
     onError: (thisError) => {
+      guest.destroy()
       console.error('onError: ', thisError)
       error = thisError
       refresh()
