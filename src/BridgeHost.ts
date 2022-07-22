@@ -22,17 +22,17 @@ interface BridgeHostOptions {
   onReady?: () => Promise<void>
   eventHandlers?: Record<string, AnyEventHandler>
   requestHandlers?: Record<string, AnyRequestHandler>
+  debug?: boolean
 }
 
 export class BridgeHost {
   private client: SourceBridgeClient
   private booted: boolean = false
-  private hasReceivedReady: boolean = false
   private helloTimer: Timeout | null = null
   private readyTimer: Timeout | null = null
 
   constructor(private readonly options: BridgeHostOptions) {
-    this.client = new SourceBridgeClient(options.iframe)
+    this.client = new SourceBridgeClient(options.iframe, { debug: options.debug })
 
     // Wire up the 'authentication' request to send back a token using the `getToken` callback.
     this.client.onEvent('authentication', async (request) => await this.sendAuthResponse(request))
@@ -100,7 +100,6 @@ export class BridgeHost {
     }
 
     this.booted = false
-    this.hasReceivedReady = false
   }
 
   public sendEvent<TType extends string, TPayload>(type: TType, payload?: TPayload): void {
@@ -140,6 +139,13 @@ export class BridgeHost {
     }
     if (this.options.onReady) {
       await this.options.onReady()
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private debug(message: any, ...optionalParams: any[]): void {
+    if (this.options.debug === true) {
+      console.log(message, optionalParams)
     }
   }
 }

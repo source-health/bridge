@@ -14,7 +14,9 @@ class BridgeGuestAPI {
     this.client = new SourceBridgeClient(otherWindow)
   }
 
-  // TODO should this return anything, really? return the hello response?
+  /**
+   * Initialize the bridge, perform the handshake with the host window, and return the host's response to `hello`.
+   */
   public async init<T>(options: Partial<BridgeGuestOptions> = {}): Promise<T> {
     const realOptions = {
       autoReady: true,

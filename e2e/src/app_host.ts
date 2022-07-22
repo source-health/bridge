@@ -64,6 +64,7 @@ export function startGuest(guestName: string, dataElement: string): void {
         await Promise.resolve()
       },
     },
+    debug: true,
   })
 
   guest.boot()

@@ -4,6 +4,10 @@ import { Envelope, Response, ResponseEnvelope } from './types'
 type ResolveFn<T> = (value: T) => void
 type OnMessageFn = (envelope: Envelope) => Promise<void>
 
+interface SourceBridgeClientOptions {
+  debug?: boolean
+}
+
 export class SourceBridgeClient {
   // Map where we keep track of open requests and their promise resolve callbacks
   private openRequests: Map<string, ResolveFn<unknown>> = new Map()
@@ -11,11 +15,11 @@ export class SourceBridgeClient {
   // Map where we keep track of event subscriptions
   private messageCallbacks: Map<string, OnMessageFn[]> = new Map()
 
-  constructor(private readonly otherWindow: Window) {
-    // eslint-disable-next-line @typescript-eslint/unbound-method
+  constructor(
+    private readonly otherWindow: Window,
+    readonly config: SourceBridgeClientOptions = {},
+  ) {
     window.addEventListener('message', (message) => this.handleMessage(message))
-    // Because we allow async callbacks, handleEnvelope is async, but addEventListener only takes non-async callbacks
-    // so we use `void` operator to allow using an async function here.
   }
 
   public close(): void {
@@ -30,7 +34,7 @@ export class SourceBridgeClient {
   }
 
   public sendEvent(message: Envelope): void {
-    console.log('[SourceBridge] sending message: ', message)
+    this.debug('[SourceBridge] sending message: ', message)
     this.otherWindow.postMessage(JSON.stringify(message), '*')
   }
 
@@ -38,7 +42,7 @@ export class SourceBridgeClient {
     const promise = new Promise<TResponse>((resolve, _reject) => {
       this.openRequests.set(message.id, resolve as ResolveFn<unknown>)
     })
-    console.log('[SourceBridge] sending request: ', message)
+    this.debug('[SourceBridge] sending request: ', message)
     this.otherWindow.postMessage(JSON.stringify(message), '*')
     return promise
   }
@@ -94,10 +98,10 @@ export class SourceBridgeClient {
 
   private handleResponse(message: ResponseEnvelope): void {
     const requestId = message.in_reply_to
-    console.log(`[SourceBridge] handling response to ${requestId}`, message)
+    this.debug(`[SourceBridge] handling response to ${requestId}`, message)
     const resolve = this.openRequests.get(requestId)
     if (!resolve) {
-      console.error(`[SourceBridge] Did not find resolve for request ${requestId}.`)
+      this.error(`[SourceBridge] Did not find resolve for request ${requestId}.`)
       return
     }
     this.openRequests.delete(requestId)
@@ -106,9 +110,7 @@ export class SourceBridgeClient {
 
   private parseEnvelope(data: unknown): Partial<ResponseEnvelope> | null {
     if (!data || typeof data !== 'string') {
-      return null
-    }
-    if (data[0] !== '{') {
+      this.debug('Ignoring message that is not a string')
       return null
     }
 
@@ -119,7 +121,20 @@ export class SourceBridgeClient {
       }
       return null
     } catch (err) {
+      this.debug('Ignoring message with invalid JSON:', data)
       return null
     }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private debug(message: any, ...optionalParams: any[]): void {
+    if (this.config.debug === true) {
+      console.log(message, optionalParams)
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private error(message: any, ...optionalParams: any[]): void {
+    console.log(message, optionalParams)
   }
 }
