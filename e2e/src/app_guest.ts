@@ -5,7 +5,7 @@ import { replaceContent } from './utils'
 
 export async function init(): Promise<void> {
   console.log('[guest] calling init()')
-  const bridgeGuest = new BridgeGuest(parent)
+  const bridgeGuest = new BridgeGuest(parent, { debug: true })
 
   let foo: FooPayload | null = null
   let auth: Auth | null = null

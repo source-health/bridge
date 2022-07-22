@@ -129,12 +129,14 @@ export class SourceBridgeClient {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private debug(message: any, ...optionalParams: any[]): void {
     if (this.config.debug === true) {
-      console.log(message, optionalParams)
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      console.log(message, ...optionalParams)
     }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private error(message: any, ...optionalParams: any[]): void {
-    console.log(message, optionalParams)
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    console.log(message, ...optionalParams)
   }
 }

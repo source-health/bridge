@@ -12,7 +12,7 @@
 import { Context, PluginBridge } from '../../src/plugins'
 import { replaceContent } from './utils'
 
-const pluginBridge = new PluginBridge()
+const pluginBridge = new PluginBridge({ debug: true })
 
 interface Config {
   initDelay: number

@@ -123,7 +123,7 @@ export class BridgeHost {
   }
 
   private async onHello(request: Envelope): Promise<void> {
-    console.log('[BridgeHost] Received hello, returning handshake response')
+    this.debug('[BridgeHost] Received hello, returning handshake response')
     if (this.helloTimer) {
       clearInterval(this.helloTimer)
     }
@@ -133,7 +133,7 @@ export class BridgeHost {
   }
 
   private async onReady(_request: Envelope): Promise<void> {
-    console.log('[BridgeHost] Received ready')
+    this.debug('[BridgeHost] Received ready')
     if (this.readyTimer) {
       clearInterval(this.readyTimer)
     }
@@ -145,7 +145,8 @@ export class BridgeHost {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private debug(message: any, ...optionalParams: any[]): void {
     if (this.options.debug === true) {
-      console.log(message, optionalParams)
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      console.log(message, ...optionalParams)
     }
   }
 }
